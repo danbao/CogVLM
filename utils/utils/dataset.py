@@ -84,15 +84,16 @@ class ItemDataset(Dataset):
             if os.path.exists(label_file):
                 with open(label_file, 'r') as f:
                     label_data = json.load(f)
-                    label = label_data['captions'][0]['content']
+                    label_text = label_data['answer']
+                    prompt_text = label_data['question']
             else:
-                label = os.path.splitext(os.path.basename(image_file))[0]
+                label_text = os.path.splitext(os.path.basename(image_file))[0]
         except Exception as e:
             print_rank0(e, level=logging.WARNING)
             return {}
-        uni_key = label
+        uni_key = os.path.splitext(os.path.basename(image_file))[0]
         prompt = "CAPTCHA:" if not os.path.exists(label_file) else "This image can be best described as:"
-        text_dict = self.process_text(label, prompt)
+        text_dict = self.process_text(label_text, prompt_text)
         if text_dict is None:
             print_rank0(f"Process text failed. Please check the max_target_length & max_source_length.\n The data is {label_file}", level=logging.WARNING)
             return {}
